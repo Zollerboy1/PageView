@@ -11,7 +11,7 @@ import UIKit
 private var tagAssociationKey: UInt8 = 0
 
 extension UIViewController {
-    public var tag: Int? {
+    internal var tag: Int? {
         get {
             return objc_getAssociatedObject(self, &tagAssociationKey) as? Int
         }
