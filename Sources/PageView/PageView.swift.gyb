@@ -1,0 +1,53 @@
+%{
+    #
+    #  PageView.swift.gyb
+    #  PageView
+    #
+    #  Created by Josef Zoller on 28.07.19.
+    #  Copyright © 2019 Josef Zoller. All rights reserved.
+    #
+}%
+//
+//  PageView.swift
+//  PageView
+//
+//  Created by Josef Zoller on 28.07.19.
+//  Copyright © 2019 Josef Zoller. All rights reserved.
+//
+
+import SwiftUI
+
+public struct PageView: View {
+    public var currentPage: Binding<Int>
+
+    public let wrapAround: Bool
+    
+    private let viewControllers: [UIViewController]
+    
+% for arity in range(0, 10):
+%{
+    genericList = ", ".join("C{}".format(i) for i in range(0, arity + 1))
+    genericConstraintList = ": View, ".join("C{}".format(i) for i in range(0, arity + 1)) + ": View"
+}%
+    public init<${genericList}>(_ currentPage: Binding<Int>, wrapAround: Bool = false, content: () -> ${"C0" if arity == 0 else "TupleView<(" + genericList + ")>"}) where ${genericConstraintList} {
+        self.currentPage = currentPage
+        self.wrapAround = wrapAround
+        
+        let ${"view" if arity == 0 else "views"} = content()${"" if arity == 0 else ".value"}
+        
+        self.viewControllers = [
+    % if arity == 0:
+            UIHostingController(rootView: view)
+    % else:
+        % for i in range(0, arity + 1):
+            UIHostingController(rootView: views.${i})${"" if i == arity else ","}
+        % end
+    % end
+        ]
+    }
+    
+% end
+    public var body: some View {
+        PageViewController(currentPage: currentPage, controllers: viewControllers.enumerated().map { $$1.tag = $$0; return $$1 }, wrapAround: wrapAround)
+    }
+}
